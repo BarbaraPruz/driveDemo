@@ -1,0 +1,28 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Accessing Google Drive from Javascript">
+  <meta name="author" content="barbara prusiewicz">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <h1>Google Drive Demo</h1>
+  <button id="authorize_button" style="display:none;">Login with Google</button>
+  <div id="directory" style="display:none;">
+    <table id="files">
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Id</th>
+      </tr>
+    </table>
+  </div>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script type="module" src="./drivedemo.js"></script> 
+  <script type="module" src="./googledrive.js"></script>      
+</body>
+</html>
