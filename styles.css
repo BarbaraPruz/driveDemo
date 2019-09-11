@@ -1,6 +1,31 @@
+@import "button.css";
+
 body {
     text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Roboto', Helvetica, sans-serif;
+}
+
+.header {
+    display: flex;
+}
+.header>div {
+    align-self: center;
+}
+.header>div:first-child {
+    flex: 1;
+}
+.header>div:last-child {
+    margin-right: 2em;
+}
+
+h1 {
+    color: black; 
+    font-size: 2.25em;
+    font-weight: 900;
+}
+
+.no-display {
+    display: none;
 }
 
 table {

@@ -8,13 +8,25 @@ import { CLIENT_ID, API_KEY } from './keys.js';
 // Array of API discovery doc URLs
 const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
 
-// ToDo: Can metadata be removed?  Update SCOPES to be just what is needed
+// Update SCOPES to be just what is needed
 // Including Metadata for all files and, BEWARE!, see/edit/create for complete drive 
 const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/drive';
  
+//
+const DIRECTORY_OPTIONS = {
+ // 'corpora': 'drive',
+  'q': "mimeType!='application/vnd.google-apps.folder'", 
+  'fields': "files(name, kind, mimeType, createdTime, modifiedTime, shared, webViewLink),nextPageToken",
+  'trashed': 'false',
+  'orderBy':'name',
+  'pageSize': '25',
+  'folderId': 'root'
+};
+
 
 export default class GoogleDrive {
   constructor(statusCallback) {
+    this.nextPageToken = null;
     this.initClient = this.initClient.bind(this);
     this.updateSigninStatus = this.updateSigninStatus.bind(this);
     this.statusCallback = statusCallback;
@@ -51,34 +63,28 @@ export default class GoogleDrive {
     gapi.auth2.getAuthInstance().signIn();
   }
 
-  signOut() {
-    gapi.auth2.getAuthInstance().signOut();
+  signOut(callback) {
+    console.log("Drive signout");
+    // NOTE: this does not log user out of google. Just says "no more drive demo for now!"
+    gapi.auth2.getAuthInstance().signOut().then( () => callback() );
   } 
 
   isSignedIn() {
     return gapi.auth2.getAuthInstance().isSignedIn.get()
   }
 
-  getDirectory(nFiles, cb) {
-    // up to 100 files will be listed, use pagesize parm to customize
-    gapi.client.drive.files.list({
-      'fields': "files(id, mimeType, name)"
-    }).then(function(response) {
-      cb(response.result.files);
-    });
+
+  getDirectory(first, callback) {
+    let options = DIRECTORY_OPTIONS;
+
+    if (!first && this.nextPageToken!==null)
+      options['pageToken'] = this.nextPageToken;
+
+    gapi.client.drive.files.list(options)
+    .then( (response) => {
+      console.log('file response',response);
+      this.nextPageToken = response.result.nextPageToken || null;
+      callback(response.result.files,this.nextPageToken===null ? false : true);
+   });
   }
-
-//   readFile(fileId, cb) {
-//     gapi.client.drive.files.get({
-//       "fileId": fileId,
-//       "alt": "media"
-//     })
-//     .then(function(response) {
-//                 // Handle the results here (response.result has the parsed body).
-//                 cb(response.body);
-//               },
-//               function(err) { console.error("Execute error", err); });
-//     )   
-//   }
 }
-

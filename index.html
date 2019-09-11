@@ -6,21 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="Accessing Google Drive from Javascript">
   <meta name="author" content="barbara prusiewicz">
+  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">  
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <h1>Google Drive Demo</h1>
-  <button id="authorize_button" style="display:none;">Login with Google</button>
-  <div id="directory" style="display:none;">
-    <table id="files">
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Id</th>
-      </tr>
-    </table>
-  </div>
+  <header>
+    <div class="header">
+      <div><h1>Google Drive Demo</h1></div>
+      <div><button id="logout_button" class="blue button no-display">Exit Drive Demo</button></div>
+    </div>
+
+  </header>
+  <main>
+    <button id="authorize_button" class="blue button">Authorize Google Drive Access</button>
+    <button id="next_button" class="blue button no-display">Next Files</button> 
+    <table id="files_table" >
+    </table>  
+  </main>
   <script src="https://apis.google.com/js/api.js"></script>
   <script type="module" src="./drivedemo.js"></script> 
   <script type="module" src="./googledrive.js"></script>      

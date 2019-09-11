@@ -1,60 +1,104 @@
 import GoogleDrive from './googledrive.js';
 
-        let files=[];
-        let googleDrive;
-        let authorizeButton;
-        /**
-         *  Sign in the user upon button click.
-         */
-        function handleAuthClick() {
-          googleDrive.signIn();
-        }
+let googleDrive;  // google SDK
+
+let authorizeButton;
+let logoutButton;
+let nextButton;
+let filesTable;
+
+// --------------------------------
+// Button Callbacks
+//---------------------------------
+function handleAuthClick() {
+  googleDrive.signIn();
+} 
+
+function handleLogoutClick() {
+  googleDrive.signOut(()=> {
+    console.log('sign out');
+    authorizeButton.classList.remove('no-display');            
+    logoutButton.classList.add('no-display');
+    nextButton.classList.add('no-display')
+    filesTable.classList.add('no-display')
+  });
+}  
   
+function handleNextClick() {
+  googleDrive.getDirectory(false,showFiles)
+}
 
-        function showFiles(f) {
-          files = f;
-          document.getElementById('directory').style.display = "block";
-          let table = document.getElementById('files');
-          let count = table.rows.length;
-          // while (count > 0) {
-          //   table.deleteRow(0);
-          //   --count;
-          // }
-          // let header = table.createTHead();
-          // let headrow = header.insertRow(0);
-          // let nameCol = headrow.insertCell(0);
-          // let typeCol = headrow.insertCell(1);
-          // let idCol = headrow.insertCell(2);                  
-          // nameCol.innerHTML = "Name";
-          // typeCol.innerHTML = "Type";
-          // idCol.innerHTML = "Id";
-          files.forEach ( (f) => {
-            let row = table.insertRow();
-            let c1 = row.insertCell(0);
-            let c2 = row.insertCell(1);            
-            let c3 = row.insertCell(2);
-            c1.innerHTML = f.name;
-            c2.innerHTML = f.mimeType;
-            c3.innerHTML = f.id;
-          })         
-        }
-        function googleDriveStatusChange(isSignedIn) {
-          if (isSignedIn) {
-            console.log("Show Menu");
-            authorizeButton.style.display = 'none';            
-            files = googleDrive.getDirectory(15,showFiles);
-          }
-          else {
-            authorizeButton.style.display = 'block';
-          }
-        }
+//--------------------------------
+// File Directory Table functions
+//--------------------------------
+function createHeader(table,fields) {
+  let thead = table.createTHead();
+  let row = thead.insertRow();
+  fields.forEach ( (column) => {
+    let th = document.createElement("th");
+    let text = document.createTextNode(column);
+    th.appendChild(text);
+    row.appendChild(th);
+  })
+}
+      
+function createChildNode (document, key,value) {
+  switch (key) {
+    case 'modifiedTime':
+      let date = new Date(value);
+      return document.createTextNode(date.toLocaleString());
+    case 'webViewLink':
+      let link = document.createElement("a");
+      link.setAttribute("href", value)
+      let linkText = document.createTextNode("View");
+      link.appendChild(linkText);
+      return link;
+    default:
+       return document.createTextNode(value);
+  }
+}
 
-      // NOTE: specically waiting for window load (vs document DOMContentLoaded) to ensure google apis script available
-      window.addEventListener("load", () => { 
-          console.log("Document Ready");
-          googleDrive = new GoogleDrive(googleDriveStatusChange);
-          authorizeButton = document.getElementById('authorize_button');
-          authorizeButton.onclick = handleAuthClick;       
-          googleDrive.initialize();  
-      });       
+function showFiles(files,moreFlag) {
+  const HEADINGS = ['dir','name','last modified','type','shared','view link'];
+  const COLUMNS = ['kind','name','modifiedTime','mimeType','shared','webViewLink'];
+
+  if (moreFlag)
+    nextButton.classList.remove("no-display");
+  else
+    nextButton.classList.add("no-display");
+
+  filesTable.innerHTML = "";
+  createHeader(filesTable, HEADINGS);
+  for (let file of files) {
+    let row = filesTable.insertRow();
+    COLUMNS.forEach ( (column) => {
+      let cell = row.insertCell();
+      let node = createChildNode(document,column,file[column]);
+      cell.appendChild(node);
+    } )
+  }      
+}
+
+// Script set up and do it!
+function googleDriveStatusChange(isSignedIn) {
+  if (isSignedIn) {
+    console.log("signed in - show directory");
+    authorizeButton.classList.add("no-display");            
+    logoutButton.classList.remove("no-display");
+    googleDrive.getDirectory(true,showFiles);
+  }
+}
+
+// NOTE: specically waiting for window load (vs document DOMContentLoaded) to ensure google apis script available
+window.addEventListener("load", () => { 
+  googleDrive = new GoogleDrive(googleDriveStatusChange);
+  authorizeButton = document.getElementById('authorize_button');
+  authorizeButton.onclick = handleAuthClick;   
+  logoutButton = document.getElementById('logout_button');
+  logoutButton.onclick = handleLogoutClick;  
+  nextButton = document.getElementById('next_button');
+  nextButton.onclick = handleNextClick;  
+  filesTable = document.getElementById('files_table');            
+  googleDrive.initialize();  
+});       
  
